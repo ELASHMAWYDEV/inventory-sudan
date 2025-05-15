@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "231235366836",
+    "project_id": "inventory-sudan",
+    "storage_bucket": "inventory-sudan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231235366836:android:00fed999ab7c1d27654ce1",
+        "android_client_info": {
+          "package_name": "com.inventory.sudan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsYjcp7S7OHFNVP_F7TA03o1Jd2EbDEC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
