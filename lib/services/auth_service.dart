@@ -3,8 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:inventory_sudan/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:inventory_sudan/utils/constants/app_constants.dart';
-import 'package:inventory_sudan/services/service_locator.dart';
-import 'package:inventory_sudan/services/firebase_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;

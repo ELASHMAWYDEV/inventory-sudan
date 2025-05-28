@@ -22,15 +22,25 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showPassword = false;
 
   void _login() {
-    Get.offAllNamed(AppRouter.HOME);
-    return;
-    // if (_formKey.currentState?.saveAndValidate() ?? false) {
-    //   final formValues = _formKey.currentState!.value;
-    //   _authController.signIn(
-    //     formValues['email'] as String,
-    //     formValues['password'] as String,
-    //   );
-    // }
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      final formValues = _formKey.currentState!.value;
+      _authController.signIn(
+        formValues['email'] as String,
+        formValues['password'] as String,
+      );
+    }
+  }
+
+  void _quickLogin(String userType) {
+    final credentials = {
+      'admin': {'email': 'admin@inventory.sudan', 'password': 'admin123'},
+      'worker': {'email': 'worker@inventory.sudan', 'password': 'worker123'},
+    };
+
+    final cred = credentials[userType];
+    if (cred != null) {
+      _authController.signIn(cred['email']!, cred['password']!);
+    }
   }
 
   @override
@@ -183,6 +193,65 @@ class _LoginScreenState extends State<LoginScreen> {
                       'للمساعدة، يرجى التواصل مع المشرف',
                       style: AppTextStyles.bodySmall,
                       textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Quick login buttons for testing
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'تسجيل دخول سريع للاختبار',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => _quickLogin('admin'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                child: const Text('مدير'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => _quickLogin('worker'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                child: const Text('عامل'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'admin@inventory.sudan / worker@inventory.sudan',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   ),
                 ],

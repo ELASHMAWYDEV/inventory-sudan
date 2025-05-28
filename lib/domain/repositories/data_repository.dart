@@ -25,6 +25,18 @@ abstract class DataRepository {
   Future<void> deletePackagingRecord(String id);
   Stream<List<PackagingModel>> streamPackagingRecords();
 
+  // Individual Packaging Form Methods
+  Future<void> addProductsAfterDrying(ProductsAfterDryingModel record);
+  Future<void> addEmptyPackagesInventory(EmptyPackagesInventoryModel record);
+  Future<void> addFinishedProducts(FinishedProductsModel record);
+  Future<List<ProductsAfterDryingModel>> getProductsAfterDrying();
+  Future<List<EmptyPackagesInventoryModel>> getEmptyPackagesInventory();
+  Future<List<FinishedProductsModel>> getFinishedProducts();
+  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity);
+  Stream<List<ProductsAfterDryingModel>> streamProductsAfterDrying();
+  Stream<List<EmptyPackagesInventoryModel>> streamEmptyPackagesInventory();
+  Stream<List<FinishedProductsModel>> streamFinishedProducts();
+
   // Sales methods
   Future<List<SalesModel>> getSalesRecords();
   Future<SalesModel?> getSalesRecord(String id);

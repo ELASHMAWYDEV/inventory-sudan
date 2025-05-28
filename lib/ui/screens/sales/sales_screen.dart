@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inventory_sudan/models/farm_to_drying_model.dart';
+import 'package:inventory_sudan/models/sales_model.dart';
 import 'package:inventory_sudan/utils/app_router.dart';
 import 'package:inventory_sudan/utils/constants/app_text_styles.dart';
 import 'package:inventory_sudan/domain/services/data_service.dart';
 import 'package:inventory_sudan/services/service_locator.dart';
-import 'package:inventory_sudan/ui/screens/farm_to_drying/components/farm_to_drying_card.dart';
+import 'package:inventory_sudan/ui/screens/sales/components/sales_card.dart';
 
-class FarmToDryingScreen extends StatefulWidget {
-  const FarmToDryingScreen({Key? key}) : super(key: key);
+class SalesScreen extends StatefulWidget {
+  const SalesScreen({Key? key}) : super(key: key);
 
   @override
-  State<FarmToDryingScreen> createState() => _FarmToDryingScreenState();
+  State<SalesScreen> createState() => _SalesScreenState();
 }
 
-class _FarmToDryingScreenState extends State<FarmToDryingScreen> {
+class _SalesScreenState extends State<SalesScreen> {
   final _dataService = serviceLocator<DataService>();
 
   @override
@@ -25,7 +25,7 @@ class _FarmToDryingScreenState extends State<FarmToDryingScreen> {
 
   Future<void> _loadData() async {
     try {
-      await _dataService.getFarmToDryingRecords();
+      await _dataService.getSalesRecords();
     } catch (e) {
       Get.snackbar(
         'خطأ',
@@ -40,11 +40,11 @@ class _FarmToDryingScreenState extends State<FarmToDryingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('من المزرعة للتجفيف'),
+        title: const Text('المبيعات'),
         centerTitle: true,
       ),
-      body: StreamBuilder<List<FarmToDryingModel>>(
-        stream: _dataService.farmToDryingStream,
+      body: StreamBuilder<List<SalesModel>>(
+        stream: _dataService.salesStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -59,21 +59,21 @@ class _FarmToDryingScreenState extends State<FarmToDryingScreen> {
             );
           }
 
-          final farmToDryingData = snapshot.data ?? [];
+          final salesData = snapshot.data ?? [];
 
-          if (farmToDryingData.isEmpty) {
+          if (salesData.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.agriculture,
+                    Icons.point_of_sale,
                     size: 80,
                     color: Colors.grey.shade400,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد بيانات من المزرعة للتجفيف',
+                    'لا توجد عمليات بيع',
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: Colors.grey.shade600,
                     ),
@@ -85,16 +85,16 @@ class _FarmToDryingScreenState extends State<FarmToDryingScreen> {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: farmToDryingData.length,
+            itemCount: salesData.length,
             itemBuilder: (context, index) {
-              final item = farmToDryingData[index];
-              return FarmToDryingCard(data: item);
+              final sale = salesData[index];
+              return SalesCard(data: sale);
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed(AppRouter.FARM_TO_DRYING_FORM),
+        onPressed: () => Get.toNamed(AppRouter.SALES_FORM),
         child: const Icon(Icons.add),
       ),
     );

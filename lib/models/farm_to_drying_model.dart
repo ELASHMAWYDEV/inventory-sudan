@@ -47,11 +47,12 @@ class FarmToDryingModel {
   final double? agreedSackWeight;
   final double? actualSackWeight;
   final int sackCount;
-  final double totalPurchaseCost;
+  final double productCost;
   final double? unloadingLoadingCost;
   final double? taxCost;
   final double? newSacksCost;
   final double? transportationCost;
+  final double? logisticsCost;
   final double totalCosts;
 
   // Logistics details
@@ -80,8 +81,7 @@ class FarmToDryingModel {
   // Additional info
   final List<BatchDetail>? batchDetails;
   final List<String>? imageUrls;
-  // final DateTime createdBy;
-  // final DateTime createdAt;
+  final String? notes;
 
   FarmToDryingModel({
     this.id,
@@ -96,11 +96,12 @@ class FarmToDryingModel {
     this.agreedSackWeight,
     this.actualSackWeight,
     required this.sackCount,
-    required this.totalPurchaseCost,
+    required this.productCost,
     this.unloadingLoadingCost,
     this.taxCost,
     this.newSacksCost,
     this.transportationCost,
+    this.logisticsCost,
     required this.totalCosts,
     this.logisticsTravelDate,
     this.logisticsTransportationCost,
@@ -121,8 +122,7 @@ class FarmToDryingModel {
     this.dryingPercentage,
     this.batchDetails,
     this.imageUrls,
-    // required this.createdBy,
-    // required this.createdAt,
+    this.notes,
   });
 
   factory FarmToDryingModel.fromFirestore(DocumentSnapshot doc) {
@@ -148,11 +148,12 @@ class FarmToDryingModel {
       agreedSackWeight: data['agreedSackWeight']?.toDouble(),
       actualSackWeight: data['actualSackWeight']?.toDouble(),
       sackCount: data['sackCount'] ?? 0,
-      totalPurchaseCost: data['totalPurchaseCost']?.toDouble() ?? 0,
+      productCost: data['productCost']?.toDouble() ?? data['totalPurchaseCost']?.toDouble() ?? 0,
       unloadingLoadingCost: data['unloadingLoadingCost']?.toDouble(),
       taxCost: data['taxCost']?.toDouble(),
       newSacksCost: data['newSacksCost']?.toDouble(),
       transportationCost: data['transportationCost']?.toDouble(),
+      logisticsCost: data['logisticsCost']?.toDouble(),
       totalCosts: data['totalCosts']?.toDouble() ?? 0,
       logisticsTravelDate:
           data['logisticsTravelDate'] != null ? (data['logisticsTravelDate'] as Timestamp).toDate() : null,
@@ -174,8 +175,7 @@ class FarmToDryingModel {
       dryingPercentage: data['dryingPercentage']?.toDouble(),
       batchDetails: batchDetails,
       imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
-      // createdBy: data['createdBy'] != null ? (data['createdBy'] as Timestamp).toDate() : DateTime.now(),
-      // createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+      notes: data['notes'],
     );
   }
 
@@ -192,11 +192,12 @@ class FarmToDryingModel {
       'agreedSackWeight': agreedSackWeight,
       'actualSackWeight': actualSackWeight,
       'sackCount': sackCount,
-      'totalPurchaseCost': totalPurchaseCost,
+      'productCost': productCost,
       'unloadingLoadingCost': unloadingLoadingCost,
       'taxCost': taxCost,
       'newSacksCost': newSacksCost,
       'transportationCost': transportationCost,
+      'logisticsCost': logisticsCost,
       'totalCosts': totalCosts,
       'logisticsTravelDate': logisticsTravelDate != null ? Timestamp.fromDate(logisticsTravelDate!) : null,
       'logisticsTransportationCost': logisticsTransportationCost,
@@ -217,8 +218,7 @@ class FarmToDryingModel {
       'dryingPercentage': dryingPercentage,
       'batchDetails': batchDetails?.map((batch) => batch.toMap()).toList(),
       'imageUrls': imageUrls,
-      // 'createdBy': Timestamp.fromDate(createdBy),
-      // 'createdAt': Timestamp.fromDate(createdAt),
+      'notes': notes,
     };
   }
 
@@ -228,10 +228,19 @@ class FarmToDryingModel {
       batchDetails = (data['batchDetails'] as List).map((batch) => BatchDetail.fromMap(batch)).toList();
     }
 
+    // Handle different date formats
+    DateTime parseDate(dynamic dateValue) {
+      if (dateValue == null) return DateTime.now();
+      if (dateValue is DateTime) return dateValue;
+      if (dateValue is Timestamp) return dateValue.toDate();
+      if (dateValue is String) return DateTime.parse(dateValue);
+      return DateTime.now();
+    }
+
     return FarmToDryingModel(
       id: data['id'],
       productName: data['productName'] ?? '',
-      purchaseDate: data['purchaseDate'] != null ? (data['purchaseDate'] as Timestamp).toDate() : DateTime.now(),
+      purchaseDate: parseDate(data['purchaseDate']),
       productType: data['productType'],
       purchaseLocation: data['purchaseLocation'],
       supplierName: data['supplierName'],
@@ -240,33 +249,37 @@ class FarmToDryingModel {
       sackPrice: data['sackPrice']?.toDouble(),
       agreedSackWeight: data['agreedSackWeight']?.toDouble(),
       actualSackWeight: data['actualSackWeight']?.toDouble(),
-      sackCount: data['sackCount'] ?? 0,
-      totalPurchaseCost: data['totalPurchaseCost']?.toDouble() ?? 0.0,
+      sackCount: data['sackCount'] ?? data['quantity'] ?? 0, // Handle both field names
+      productCost: data['productCost']?.toDouble() ??
+          data['totalPurchaseCost']?.toDouble() ??
+          data['totalCosts']?.toDouble() ??
+          0.0,
       unloadingLoadingCost: data['unloadingLoadingCost']?.toDouble(),
       taxCost: data['taxCost']?.toDouble(),
       newSacksCost: data['newSacksCost']?.toDouble(),
       transportationCost: data['transportationCost']?.toDouble(),
+      logisticsCost: data['logisticsCost']?.toDouble(),
       totalCosts: data['totalCosts']?.toDouble() ?? 0.0,
-      logisticsTravelDate:
-          data['logisticsTravelDate'] != null ? (data['logisticsTravelDate'] as Timestamp).toDate() : null,
+      logisticsTravelDate: data['logisticsTravelDate'] != null ? parseDate(data['logisticsTravelDate']) : null,
       logisticsTransportationCost: data['logisticsTransportationCost']?.toDouble(),
       logisticsAccommodationCost: data['logisticsAccommodationCost']?.toDouble(),
       logisticsMealsCost: data['logisticsMealsCost']?.toDouble(),
       logisticsLocalTransportCost: data['logisticsLocalTransportCost']?.toDouble(),
       logisticsTotalCost: data['logisticsTotalCost']?.toDouble(),
-      arrivalDate: data['arrivalDate'] != null ? (data['arrivalDate'] as Timestamp).toDate() : null,
+      arrivalDate: data['arrivalDate'] != null ? parseDate(data['arrivalDate']) : null,
       processingDays: data['processingDays'],
       dryingDays: data['dryingDays'],
       laborCount: data['laborCount'],
       laborCost: data['laborCost']?.toDouble(),
       suppliesCost: data['suppliesCost']?.toDouble(),
-      totalWeightBeforeDrying: data['totalWeightBeforeDrying']?.toDouble(),
+      totalWeightBeforeDrying: data['totalWeightBeforeDrying']?.toDouble() ?? data['wholeWeight']?.toDouble(),
       wasteWeight: data['wasteWeight']?.toDouble(),
       totalWeightToDryer: data['totalWeightToDryer']?.toDouble(),
       totalWeightAfterDrying: data['totalWeightAfterDrying']?.toDouble(),
       dryingPercentage: data['dryingPercentage']?.toDouble(),
-      // createdBy: data['createdBy'] != null ? (data['createdBy'] as Timestamp).toDate() : DateTime.now(),
-      // createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+      batchDetails: batchDetails,
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      notes: data['notes'],
     );
   }
 }

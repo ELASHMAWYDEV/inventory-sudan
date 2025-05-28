@@ -17,6 +17,9 @@ class FirebaseRepositoryImpl implements DataRepository {
   static const String _packagingCollection = 'packaging';
   static const String _salesCollection = 'sales';
   static const String _stockLogCollection = 'stock_log';
+  static const String _productsAfterDryingCollection = 'products_after_drying';
+  static const String _emptyPackagesInventoryCollection = 'empty_packages_inventory';
+  static const String _finishedProductsCollection = 'finished_products';
 
   FirebaseRepositoryImpl({
     FirebaseFirestore? firestore,
@@ -166,6 +169,98 @@ class FirebaseRepositoryImpl implements DataRepository {
         .map((snapshot) => snapshot.docs.map((doc) => PackagingModel.fromFirestore(doc)).toList());
   }
 
+  // Individual Packaging Form Methods
+  @override
+  Future<void> addProductsAfterDrying(ProductsAfterDryingModel record) async {
+    try {
+      await _firestore.collection(_productsAfterDryingCollection).add(record.toMap());
+    } catch (e) {
+      throw Exception('Failed to add products after drying record: $e');
+    }
+  }
+
+  @override
+  Future<void> addEmptyPackagesInventory(EmptyPackagesInventoryModel record) async {
+    try {
+      await _firestore.collection(_emptyPackagesInventoryCollection).add(record.toMap());
+    } catch (e) {
+      throw Exception('Failed to add empty packages inventory record: $e');
+    }
+  }
+
+  @override
+  Future<void> addFinishedProducts(FinishedProductsModel record) async {
+    try {
+      await _firestore.collection(_finishedProductsCollection).add(record.toMap());
+    } catch (e) {
+      throw Exception('Failed to add finished products record: $e');
+    }
+  }
+
+  @override
+  Future<List<EmptyPackagesInventoryModel>> getEmptyPackagesInventory() async {
+    try {
+      final snapshot = await _firestore.collection(_emptyPackagesInventoryCollection).get();
+      return snapshot.docs.map((doc) => EmptyPackagesInventoryModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get empty packages inventory: $e');
+    }
+  }
+
+  @override
+  Future<List<ProductsAfterDryingModel>> getProductsAfterDrying() async {
+    try {
+      final snapshot = await _firestore.collection(_productsAfterDryingCollection).get();
+      return snapshot.docs.map((doc) => ProductsAfterDryingModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get products after drying: $e');
+    }
+  }
+
+  @override
+  Future<List<FinishedProductsModel>> getFinishedProducts() async {
+    try {
+      final snapshot = await _firestore.collection(_finishedProductsCollection).get();
+      return snapshot.docs.map((doc) => FinishedProductsModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get finished products: $e');
+    }
+  }
+
+  @override
+  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity) async {
+    try {
+      // This is a simplified implementation - in a real scenario, you'd need to:
+      // 1. Find the corresponding product for the batch number
+      // 2. Find the empty packages inventory for that product
+      // 3. Deduct the quantity from the stock
+      // For now, we'll just log this action
+
+      final inventoryItem = InventoryItem(
+        itemName: 'Product for batch: $batchNumber',
+        itemType: 'empty_package',
+        expectedQuantity: 0.0,
+        actualQuantity: -quantity.toDouble(),
+        unit: 'count',
+        difference: -quantity.toDouble(),
+        reason: 'Finished products packaging',
+      );
+
+      final stockLogRecord = StockLogModel(
+        logDate: DateTime.now(),
+        inventoryItems: [inventoryItem],
+        hasDiscrepancies: true,
+        notes: 'Automatic deduction for finished products packaging',
+        createdBy: 'system',
+        createdAt: DateTime.now(),
+      );
+
+      await addStockLogRecord(stockLogRecord);
+    } catch (e) {
+      throw Exception('Failed to deduct empty packages stock: $e');
+    }
+  }
+
   // Sales methods
   @override
   Future<List<SalesModel>> getSalesRecords() async {
@@ -276,5 +371,29 @@ class FirebaseRepositoryImpl implements DataRepository {
         .collection(_stockLogCollection)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => StockLogModel.fromFirestore(doc)).toList());
+  }
+
+  @override
+  Stream<List<ProductsAfterDryingModel>> streamProductsAfterDrying() {
+    return _firestore
+        .collection(_productsAfterDryingCollection)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ProductsAfterDryingModel.fromFirestore(doc)).toList());
+  }
+
+  @override
+  Stream<List<EmptyPackagesInventoryModel>> streamEmptyPackagesInventory() {
+    return _firestore
+        .collection(_emptyPackagesInventoryCollection)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => EmptyPackagesInventoryModel.fromFirestore(doc)).toList());
+  }
+
+  @override
+  Stream<List<FinishedProductsModel>> streamFinishedProducts() {
+    return _firestore
+        .collection(_finishedProductsCollection)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => FinishedProductsModel.fromFirestore(doc)).toList());
   }
 }

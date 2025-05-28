@@ -1,25 +1,23 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:inventory_sudan/models/farm_to_drying_model.dart';
-
+import 'package:inventory_sudan/models/sales_model.dart';
 import 'package:inventory_sudan/utils/app_router.dart';
 import 'package:inventory_sudan/utils/constants/app_colors.dart';
 import 'package:inventory_sudan/utils/constants/app_text_styles.dart';
 
-class FarmToDryingCard extends StatelessWidget {
-  final FarmToDryingModel data;
+class SalesCard extends StatelessWidget {
+  final SalesModel data;
 
-  const FarmToDryingCard({
+  const SalesCard({
     super.key,
     required this.data,
   });
 
   @override
   Widget build(BuildContext context) {
-    final purchaseDate = data.purchaseDate;
-    final formattedDate = DateFormat('yyyy/MM/dd').format(purchaseDate);
+    final saleDate = data.saleDate;
+    final formattedDate = DateFormat('yyyy/MM/dd').format(saleDate);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -30,7 +28,7 @@ class FarmToDryingCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Get.toNamed(
-            AppRouter.FARM_TO_DRYING_DETAILS,
+            AppRouter.SALES_DETAILS,
             arguments: {'id': data.id},
           );
         },
@@ -43,13 +41,13 @@ class FarmToDryingCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    _getProductIcon(data.productName),
+                    _getBuyerTypeIcon(data.buyerType),
                     color: AppColors.primary,
                     size: 24,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    data.productName,
+                    data.buyerName,
                     style: AppTextStyles.heading3,
                   ),
                   const Spacer(),
@@ -59,13 +57,13 @@ class FarmToDryingCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: _getPaymentStatusColor(data.paymentStatus).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      data.productType ?? 'غير محدد',
+                      _getPaymentStatusText(data.paymentStatus),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
+                        color: _getPaymentStatusColor(data.paymentStatus),
                       ),
                     ),
                   ),
@@ -79,13 +77,13 @@ class FarmToDryingCard extends StatelessWidget {
                   _buildInfoItem(
                     Icons.calendar_today,
                     formattedDate,
-                    'تاريخ الشراء',
+                    'تاريخ البيع',
                   ),
                   const SizedBox(width: 24),
                   _buildInfoItem(
-                    Icons.shopping_bag,
-                    '${data.sackCount} ${data.productType ?? ''}',
-                    'الكمية',
+                    Icons.business,
+                    data.buyerType,
+                    'نوع المشتري',
                   ),
                 ],
               ),
@@ -94,14 +92,14 @@ class FarmToDryingCard extends StatelessWidget {
                 children: [
                   _buildInfoItem(
                     Icons.location_on,
-                    data.purchaseLocation ?? 'غير محدد',
-                    'مكان الشراء',
+                    data.buyerLocation,
+                    'موقع المشتري',
                   ),
                   const SizedBox(width: 24),
                   _buildInfoItem(
-                    Icons.agriculture,
-                    data.supplierName ?? 'غير محدد',
-                    'المورد',
+                    Icons.inventory,
+                    '${data.items.length} منتج',
+                    'عدد المنتجات',
                   ),
                 ],
               ),
@@ -112,13 +110,13 @@ class FarmToDryingCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'التكلفة الإجمالية:',
+                    'إجمالي المبلغ:',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   Text(
-                    '${_formatCurrency(data.productCost)} جنيه',
+                    '${_formatCurrency(data.totalAmount)} جنيه',
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -131,20 +129,41 @@ class FarmToDryingCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'الوزن الكلي:',
+                    'المبلغ المحصل:',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   Text(
-                    '${_formatNumber(data.totalWeightBeforeDrying ?? 0)} كجم',
+                    '${_formatCurrency(data.collectedAmount)} جنيه',
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: Colors.green,
                     ),
                   ),
                 ],
               ),
+              if (data.remainingAmount > 0) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'المبلغ المتبقي:',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      '${_formatCurrency(data.remainingAmount)} جنيه',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -188,26 +207,46 @@ class FarmToDryingCard extends StatelessWidget {
     );
   }
 
-  IconData _getProductIcon(String? productName) {
-    if (productName == null) return Icons.category;
-
-    switch (productName.toLowerCase()) {
-      case 'فول سوداني':
-        return Icons.eco;
-      case 'سمسم':
-        return Icons.grass;
-      case 'ذرة':
-        return Icons.agriculture;
+  IconData _getBuyerTypeIcon(String buyerType) {
+    switch (buyerType.toLowerCase()) {
+      case 'supermarket':
+        return Icons.store;
+      case 'individual':
+        return Icons.person;
+      case 'online client':
+        return Icons.computer;
       default:
-        return Icons.category;
+        return Icons.business;
+    }
+  }
+
+  Color _getPaymentStatusColor(String paymentStatus) {
+    switch (paymentStatus.toLowerCase()) {
+      case 'paid':
+        return Colors.green;
+      case 'partial':
+        return Colors.orange;
+      case 'unpaid':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getPaymentStatusText(String paymentStatus) {
+    switch (paymentStatus.toLowerCase()) {
+      case 'paid':
+        return 'مدفوع';
+      case 'partial':
+        return 'مدفوع جزئياً';
+      case 'unpaid':
+        return 'غير مدفوع';
+      default:
+        return 'غير محدد';
     }
   }
 
   String _formatCurrency(num amount) {
     return NumberFormat('#,###').format(amount);
-  }
-
-  String _formatNumber(num value) {
-    return NumberFormat('#,##0.##').format(value);
   }
 }

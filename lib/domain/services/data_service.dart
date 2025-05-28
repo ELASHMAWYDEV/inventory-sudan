@@ -15,11 +15,6 @@ class DataService {
   final _salesController = StreamController<List<SalesModel>>.broadcast();
   final _stockLogController = StreamController<List<StockLogModel>>.broadcast();
 
-  // Collections
-  static const String collectionFarmToDrying = 'farm_to_drying';
-  static const String collectionPackaging = 'packaging';
-  static const String collectionUsers = 'users';
-
   DataService(this._repository) {
     // Initialize streams
     _repository.streamFarmToDryingRecords().listen((data) {
@@ -48,10 +43,14 @@ class DataService {
   }
 
   // Stream getters
-  Stream<List<FarmToDryingModel>> get farmToDryingStream => _farmToDryingController.stream;
-  Stream<List<PackagingModel>> get packagingStream => _packagingController.stream;
-  Stream<List<SalesModel>> get salesStream => _salesController.stream;
-  Stream<List<StockLogModel>> get stockLogStream => _stockLogController.stream;
+  Stream<List<FarmToDryingModel>> get farmToDryingStream => _repository.streamFarmToDryingRecords();
+  Stream<List<PackagingModel>> get packagingStream => _repository.streamPackagingRecords();
+  Stream<List<SalesModel>> get salesStream => _repository.streamSalesRecords();
+  Stream<List<StockLogModel>> get stockLogStream => _repository.streamStockLogRecords();
+  Stream<List<ProductsAfterDryingModel>> get productsAfterDryingStream => _repository.streamProductsAfterDrying();
+  Stream<List<EmptyPackagesInventoryModel>> get emptyPackagesInventoryStream =>
+      _repository.streamEmptyPackagesInventory();
+  Stream<List<FinishedProductsModel>> get finishedProductsStream => _repository.streamFinishedProducts();
 
   // Authentication methods
   Future<UserModel?> signInWithEmailAndPassword(String email, String password) {
@@ -104,6 +103,35 @@ class DataService {
     return _repository.deletePackagingRecord(id);
   }
 
+  // Individual Packaging Form Methods
+  Future<void> addProductsAfterDrying(ProductsAfterDryingModel record) {
+    return _repository.addProductsAfterDrying(record);
+  }
+
+  Future<void> addEmptyPackagesInventory(EmptyPackagesInventoryModel record) {
+    return _repository.addEmptyPackagesInventory(record);
+  }
+
+  Future<void> addFinishedProducts(FinishedProductsModel record) {
+    return _repository.addFinishedProducts(record);
+  }
+
+  Future<List<ProductsAfterDryingModel>> getProductsAfterDrying() {
+    return _repository.getProductsAfterDrying();
+  }
+
+  Future<List<EmptyPackagesInventoryModel>> getEmptyPackagesInventory() {
+    return _repository.getEmptyPackagesInventory();
+  }
+
+  Future<List<FinishedProductsModel>> getFinishedProducts() {
+    return _repository.getFinishedProducts();
+  }
+
+  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity) {
+    return _repository.deductEmptyPackagesStock(batchNumber, quantity);
+  }
+
   // Sales methods
   Future<List<SalesModel>> getSalesRecords() {
     return _repository.getSalesRecords();
@@ -114,6 +142,10 @@ class DataService {
   }
 
   Future<void> addSalesRecord(SalesModel record) {
+    return _repository.addSalesRecord(record);
+  }
+
+  Future<void> addSale(SalesModel record) {
     return _repository.addSalesRecord(record);
   }
 

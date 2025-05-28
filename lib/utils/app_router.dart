@@ -1,15 +1,20 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_sudan/ui/screens/auth/login_screen.dart';
 import 'package:inventory_sudan/ui/screens/error/not_found_screen.dart';
 import 'package:inventory_sudan/ui/screens/farm_to_drying/farm_to_drying_form_screen.dart';
 import 'package:inventory_sudan/ui/screens/farm_to_drying/farm_to_drying_screen.dart';
+import 'package:inventory_sudan/ui/screens/farm_to_drying/farm_to_drying_details_screen.dart';
 import 'package:inventory_sudan/ui/screens/home/home_screen.dart';
 import 'package:inventory_sudan/ui/screens/onboarding/onboarding_screen.dart';
-import 'package:inventory_sudan/ui/screens/packaging/packaging_form_screen.dart';
 import 'package:inventory_sudan/ui/screens/packaging/packaging_screen.dart';
+import 'package:inventory_sudan/ui/screens/packaging/products_after_drying_form_screen.dart';
+import 'package:inventory_sudan/ui/screens/packaging/empty_packages_inventory_form_screen.dart';
+import 'package:inventory_sudan/ui/screens/packaging/finished_products_form_screen.dart';
+import 'package:inventory_sudan/ui/screens/sales/sales_screen.dart';
+import 'package:inventory_sudan/ui/screens/sales/sales_form_screen.dart';
+import 'package:inventory_sudan/ui/screens/sales/sales_details_screen.dart';
 
 class AppRouter {
   // Auth routes
@@ -30,8 +35,9 @@ class AppRouter {
 
   // Packaging routes
   static const String PACKAGING = '/packaging';
-  static const String PACKAGING_FORM = '/packaging/form';
-  static const String PACKAGING_DETAILS = '/packaging/details';
+  static const String PACKAGING_PRODUCTS_AFTER_DRYING_FORM = '/packaging/products-after-drying-form';
+  static const String PACKAGING_EMPTY_PACKAGES_INVENTORY_FORM = '/packaging/empty-packages-inventory-form';
+  static const String PACKAGING_FINISHED_PRODUCTS_FORM = '/packaging/finished-products-form';
 
   // Sales routes
   static const String SALES = '/sales';
@@ -78,13 +84,43 @@ class AppRouter {
       transition: Transition.fadeIn,
     ),
     GetPage(
+      name: FARM_TO_DRYING_DETAILS,
+      page: () => const FarmToDryingDetailsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
       name: PACKAGING,
       page: () => const PackagingScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: PACKAGING_FORM,
-      page: () => const PackagingFormScreen(),
+      name: PACKAGING_PRODUCTS_AFTER_DRYING_FORM,
+      page: () => const ProductsAfterDryingFormScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: PACKAGING_EMPTY_PACKAGES_INVENTORY_FORM,
+      page: () => const EmptyPackagesInventoryFormScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: PACKAGING_FINISHED_PRODUCTS_FORM,
+      page: () => const FinishedProductsFormScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: SALES,
+      page: () => const SalesScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: SALES_FORM,
+      page: () => const SalesFormScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: SALES_DETAILS,
+      page: () => const SalesDetailsScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(

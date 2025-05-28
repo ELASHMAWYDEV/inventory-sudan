@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:inventory_sudan/controllers/auth/auth_controller.dart';
 import 'package:inventory_sudan/utils/app_router.dart';
 import 'package:inventory_sudan/services/service_locator.dart';
+import 'package:inventory_sudan/services/setup_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:inventory_sudan/utils/constants/app_colors.dart';
@@ -19,6 +20,10 @@ void main() async {
 
   // Initialize services
   await setupServiceLocator();
+
+  // Initialize test users for development
+  final setupService = SetupService();
+  await setupService.initializeTestUsers();
 
   // Set preferred orientations (portrait only for better UX for workers)
   await SystemChrome.setPreferredOrientations([

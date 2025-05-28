@@ -31,6 +31,7 @@ class CustomTextField extends StatelessWidget {
   final double? height;
   final bool autofocus;
   final String? initialValue;
+  final bool? readOnly;
 
   const CustomTextField({
     Key? key,
@@ -59,6 +60,7 @@ class CustomTextField extends StatelessWidget {
     this.height,
     this.autofocus = false,
     this.initialValue,
+    this.readOnly = false,
   }) : super(key: key);
 
   @override
@@ -90,6 +92,7 @@ class CustomTextField extends StatelessWidget {
           textAlignVertical: textAlignVertical,
           autofocus: autofocus,
           initialValue: initialValue,
+          readOnly: readOnly ?? false,
           style: AppTextStyles.bodyLarge,
           decoration: InputDecoration(
             hintText: hint,

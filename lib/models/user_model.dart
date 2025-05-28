@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Remove unused import
+// import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   final String id;
@@ -23,8 +24,8 @@ class UserModel {
       'name': name,
       'email': email,
       'role': role,
-      'createdAt': createdAt.toIso8601String(),
-      'lastLogin': lastLogin.toIso8601String(),
+      'created_at': createdAt,
+      'last_login': lastLogin,
     };
   }
 
@@ -34,9 +35,20 @@ class UserModel {
       name: map['name'] as String,
       email: map['email'] as String,
       role: map['role'] as String,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      lastLogin: DateTime.parse(map['lastLogin'] as String),
+      createdAt: _parseDateTime(map['created_at'] ?? map['createdAt']),
+      lastLogin: _parseDateTime(map['last_login'] ?? map['lastLogin']),
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.parse(value);
+    // Handle Firestore Timestamp
+    if (value.runtimeType.toString() == 'Timestamp') {
+      return (value as dynamic).toDate();
+    }
+    return DateTime.now();
   }
 
   UserModel copyWith({

@@ -1,4 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:inventory_sudan/data/repositories/firebase_repository_impl.dart';
 import 'package:inventory_sudan/domain/repositories/data_repository.dart';

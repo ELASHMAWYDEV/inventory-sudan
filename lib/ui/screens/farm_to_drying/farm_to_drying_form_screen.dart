@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inventory_sudan/models/farm_to_drying_model.dart';
-import 'package:inventory_sudan/utils/constants/app_colors.dart';
-import 'package:inventory_sudan/utils/constants/app_text_styles.dart';
 import 'package:inventory_sudan/ui/widgets/common/custom_button.dart';
+import 'package:inventory_sudan/ui/widgets/common/dynamic_dropdown_widget.dart';
 import 'package:inventory_sudan/domain/services/data_service.dart';
 import 'package:inventory_sudan/services/service_locator.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -22,9 +21,39 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
   final _dataService = serviceLocator<DataService>();
   bool _isLoading = false;
 
+  // Dynamic lists that can be expanded
+  List<String> _productNames = ['فول سوداني', 'سمسم', 'ذرة'];
+  List<String> _purchaseLocations = ['الخرطوم', 'كسلا', 'الجزيرة', 'سنار'];
+  List<String> _supplierNames = ['محمد أحمد', 'علي محمد', 'فاطمة عبدالله'];
+
   final List<String> _productTypes = ['خام', 'مجفف'];
-  final List<String> _productNames = ['فول سوداني', 'سمسم', 'ذرة'];
-  final List<String> _quantityUnits = ['شوال', 'كيلوجرام', 'طن'];
+
+  // Controllers for cost calculation
+  final TextEditingController _productCostController = TextEditingController();
+  final TextEditingController _logisticsCostController = TextEditingController();
+  final TextEditingController _totalCostController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _productCostController.addListener(_calculateTotalCost);
+    _logisticsCostController.addListener(_calculateTotalCost);
+  }
+
+  @override
+  void dispose() {
+    _productCostController.dispose();
+    _logisticsCostController.dispose();
+    _totalCostController.dispose();
+    super.dispose();
+  }
+
+  void _calculateTotalCost() {
+    final productCost = double.tryParse(_productCostController.text) ?? 0.0;
+    final logisticsCost = double.tryParse(_logisticsCostController.text) ?? 0.0;
+    final totalCost = productCost + logisticsCost;
+    _totalCostController.text = totalCost.toStringAsFixed(2);
+  }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
@@ -33,17 +62,23 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
       try {
         final formData = _formKey.currentState!.value;
 
+        final productCost = double.tryParse(_productCostController.text) ?? 0.0;
+        final logisticsCost = double.tryParse(_logisticsCostController.text) ?? 0.0;
+        final totalCost = productCost + logisticsCost;
+
         // Convert form data to the format expected by the service
         final data = {
           'productName': formData['productName'],
           'productType': formData['productType'],
           'purchaseDate': (formData['purchaseDate'] as DateTime).toIso8601String(),
-          'quantity': int.parse(formData['quantity'].toString()),
-          'quantityUnit': formData['quantityUnit'],
-          'wholeWeight': double.parse(formData['wholeWeight'].toString()),
+          'sackCount': int.parse(formData['quantity'].toString()),
+          'totalWeightBeforeDrying': double.parse(formData['wholeWeight'].toString()),
           'purchaseLocation': formData['purchaseLocation'],
           'supplierName': formData['supplierName'],
-          'totalCosts': double.parse(formData['totalCosts'].toString()),
+          'productCost': productCost,
+          'logisticsCost': logisticsCost,
+          'totalCosts': totalCost,
+          'notes': formData['notes'],
           'createdAt': DateTime.now().toIso8601String(),
         };
 
@@ -90,6 +125,7 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
               name: 'productType',
               decoration: const InputDecoration(
                 labelText: 'نوع المنتج',
+                prefixIcon: Icon(Icons.category),
               ),
               validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
               items: _productTypes
@@ -100,35 +136,78 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
                   .toList(),
             ),
             const SizedBox(height: 16),
-            FormBuilderDropdown<String>(
+
+            // Dynamic Product Name Dropdown
+            DynamicDropdownWidget(
               name: 'productName',
-              decoration: const InputDecoration(
-                labelText: 'اسم المنتج',
-              ),
-              validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-              items: _productNames
-                  .map((name) => DropdownMenuItem(
-                        value: name,
-                        child: Text(name),
-                      ))
-                  .toList(),
+              label: 'اسم المنتج',
+              options: _productNames,
+              prefixIcon: Icons.inventory,
+              isRequired: true,
+              onChanged: (value) {
+                _formKey.currentState?.fields['productName']?.didChange(value);
+              },
+              onNewOptionAdded: (newOption) {
+                setState(() {
+                  _productNames.add(newOption);
+                });
+              },
             ),
             const SizedBox(height: 16),
+
             FormBuilderDateTimePicker(
               name: 'purchaseDate',
               inputType: InputType.date,
               format: DateFormat('yyyy-MM-dd'),
               decoration: const InputDecoration(
                 labelText: 'تاريخ الشراء',
-                suffixIcon: Icon(Icons.calendar_today),
+                prefixIcon: Icon(Icons.calendar_today),
               ),
               validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
             ),
             const SizedBox(height: 16),
+
+            // Dynamic Purchase Location Dropdown
+            DynamicDropdownWidget(
+              name: 'purchaseLocation',
+              label: 'مكان الشراء',
+              options: _purchaseLocations,
+              prefixIcon: Icons.location_on,
+              isRequired: true,
+              onChanged: (value) {
+                _formKey.currentState?.fields['purchaseLocation']?.didChange(value);
+              },
+              onNewOptionAdded: (newOption) {
+                setState(() {
+                  _purchaseLocations.add(newOption);
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Dynamic Supplier Name Dropdown
+            DynamicDropdownWidget(
+              name: 'supplierName',
+              label: 'اسم المورد',
+              options: _supplierNames,
+              prefixIcon: Icons.person,
+              isRequired: true,
+              onChanged: (value) {
+                _formKey.currentState?.fields['supplierName']?.didChange(value);
+              },
+              onNewOptionAdded: (newOption) {
+                setState(() {
+                  _supplierNames.add(newOption);
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
             FormBuilderTextField(
               name: 'quantity',
               decoration: const InputDecoration(
-                labelText: 'الكمية',
+                labelText: 'عدد الأكياس',
+                prefixIcon: Icon(Icons.numbers),
               ),
               keyboardType: TextInputType.number,
               validator: FormBuilderValidators.compose([
@@ -137,24 +216,12 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
               ]),
             ),
             const SizedBox(height: 16),
-            FormBuilderDropdown<String>(
-              name: 'quantityUnit',
-              decoration: const InputDecoration(
-                labelText: 'وحدة القياس',
-              ),
-              validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-              items: _quantityUnits
-                  .map((unit) => DropdownMenuItem(
-                        value: unit,
-                        child: Text(unit),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 16),
+
             FormBuilderTextField(
               name: 'wholeWeight',
               decoration: const InputDecoration(
                 labelText: 'الوزن الكلي (كجم)',
+                prefixIcon: Icon(Icons.scale),
               ),
               keyboardType: TextInputType.number,
               validator: FormBuilderValidators.compose([
@@ -163,34 +230,72 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
               ]),
             ),
             const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'purchaseLocation',
+
+            // Product Cost Field
+            TextFormField(
+              controller: _productCostController,
               decoration: const InputDecoration(
-                labelText: 'مكان الشراء',
-              ),
-              validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-            ),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'supplierName',
-              decoration: const InputDecoration(
-                labelText: 'اسم المورد',
-              ),
-              validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-            ),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'totalCosts',
-              decoration: const InputDecoration(
-                labelText: 'التكاليف الكلية',
+                labelText: 'تكلفة المنتج',
+                prefixIcon: Icon(Icons.attach_money),
+                border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-                FormBuilderValidators.numeric(errorText: 'يجب إدخال رقم'),
-              ]),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'هذا الحقل مطلوب';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'يجب إدخال رقم صحيح';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Logistics Cost Field
+            TextFormField(
+              controller: _logisticsCostController,
+              decoration: const InputDecoration(
+                labelText: 'تكلفة اللوجستيات',
+                prefixIcon: Icon(Icons.local_shipping),
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty && double.tryParse(value) == null) {
+                  return 'يجب إدخال رقم صحيح';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Total Cost Display (Read-only)
+            TextFormField(
+              controller: _totalCostController,
+              decoration: const InputDecoration(
+                labelText: 'إجمالي التكلفة',
+                prefixIcon: Icon(Icons.calculate),
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Color(0xFFF5F5F5),
+              ),
+              readOnly: true,
+            ),
+            const SizedBox(height: 16),
+
+            // Notes Field
+            FormBuilderTextField(
+              name: 'notes',
+              decoration: const InputDecoration(
+                labelText: 'ملاحظات',
+                prefixIcon: Icon(Icons.note),
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
             ),
             const SizedBox(height: 24),
+
             CustomButton(
               label: 'حفظ',
               onPressed: _handleSubmit,

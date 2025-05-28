@@ -1,5 +1,200 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Model for Products after drying production (First form)
+class ProductsAfterDryingModel {
+  final String? id;
+  final String batchNumber;
+  final double totalGeneratedWeight;
+  final String? notes;
+  final List<String>? imageUrls;
+  final String createdBy;
+  final DateTime createdAt;
+
+  ProductsAfterDryingModel({
+    this.id,
+    required this.batchNumber,
+    required this.totalGeneratedWeight,
+    this.notes,
+    this.imageUrls,
+    required this.createdBy,
+    required this.createdAt,
+  });
+
+  factory ProductsAfterDryingModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return ProductsAfterDryingModel(
+      id: doc.id,
+      batchNumber: data['batchNumber'] ?? '',
+      totalGeneratedWeight: data['totalGeneratedWeight']?.toDouble() ?? 0.0,
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'batchNumber': batchNumber,
+      'totalGeneratedWeight': totalGeneratedWeight,
+      'notes': notes,
+      'imageUrls': imageUrls,
+      'createdBy': createdBy,
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
+  }
+
+  factory ProductsAfterDryingModel.fromMap(Map<String, dynamic> data) {
+    return ProductsAfterDryingModel(
+      id: data['id'],
+      batchNumber: data['batchNumber'] ?? '',
+      totalGeneratedWeight: data['totalGeneratedWeight']?.toDouble() ?? 0.0,
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+    );
+  }
+}
+
+// Model for Empty packages inventory (Second form)
+class EmptyPackagesInventoryModel {
+  final String? id;
+  final String productName;
+  final int stock;
+  final double totalCost;
+  final String packageType; // B2B Wholesale, B2C Retail
+  final double packageWeight;
+  final String weightUnit; // kg, g
+  final String? notes;
+  final List<String>? imageUrls;
+  final String createdBy;
+  final DateTime createdAt;
+
+  EmptyPackagesInventoryModel({
+    this.id,
+    required this.productName,
+    required this.stock,
+    required this.totalCost,
+    required this.packageType,
+    required this.packageWeight,
+    required this.weightUnit,
+    this.notes,
+    this.imageUrls,
+    required this.createdBy,
+    required this.createdAt,
+  });
+
+  factory EmptyPackagesInventoryModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return EmptyPackagesInventoryModel(
+      id: doc.id,
+      productName: data['productName'] ?? '',
+      stock: data['stock'] ?? 0,
+      totalCost: data['totalCost']?.toDouble() ?? 0.0,
+      packageType: data['packageType'] ?? '',
+      packageWeight: data['packageWeight']?.toDouble() ?? 0.0,
+      weightUnit: data['weightUnit'] ?? 'kg',
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'productName': productName,
+      'stock': stock,
+      'totalCost': totalCost,
+      'packageType': packageType,
+      'packageWeight': packageWeight,
+      'weightUnit': weightUnit,
+      'notes': notes,
+      'imageUrls': imageUrls,
+      'createdBy': createdBy,
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
+  }
+
+  factory EmptyPackagesInventoryModel.fromMap(Map<String, dynamic> data) {
+    return EmptyPackagesInventoryModel(
+      id: data['id'],
+      productName: data['productName'] ?? '',
+      stock: data['stock'] ?? 0,
+      totalCost: data['totalCost']?.toDouble() ?? 0.0,
+      packageType: data['packageType'] ?? '',
+      packageWeight: data['packageWeight']?.toDouble() ?? 0.0,
+      weightUnit: data['weightUnit'] ?? 'kg',
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+    );
+  }
+}
+
+// Model for Finished products (Packaged products) (Third form)
+class FinishedProductsModel {
+  final String? id;
+  final String batchNumber;
+  final int quantity; // This deducts from empty packages stock
+  final String? notes;
+  final List<String>? imageUrls;
+  final String createdBy;
+  final DateTime createdAt;
+
+  FinishedProductsModel({
+    this.id,
+    required this.batchNumber,
+    required this.quantity,
+    this.notes,
+    this.imageUrls,
+    required this.createdBy,
+    required this.createdAt,
+  });
+
+  factory FinishedProductsModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return FinishedProductsModel(
+      id: doc.id,
+      batchNumber: data['batchNumber'] ?? '',
+      quantity: data['quantity'] ?? 0,
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'batchNumber': batchNumber,
+      'quantity': quantity,
+      'notes': notes,
+      'imageUrls': imageUrls,
+      'createdBy': createdBy,
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
+  }
+
+  factory FinishedProductsModel.fromMap(Map<String, dynamic> data) {
+    return FinishedProductsModel(
+      id: data['id'],
+      batchNumber: data['batchNumber'] ?? '',
+      quantity: data['quantity'] ?? 0,
+      notes: data['notes'],
+      imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
+      createdBy: data['createdBy'] ?? '',
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+    );
+  }
+}
+
+// Legacy model for backward compatibility
 class RawMaterial {
   final String name;
   final double weight;
