@@ -6,6 +6,7 @@ class UserModel {
   final String name;
   final String email;
   final String role;
+  final List<String> permissions;
   final DateTime createdAt;
   final DateTime lastLogin;
 
@@ -14,6 +15,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.role,
+    required this.permissions,
     required this.createdAt,
     required this.lastLogin,
   });
@@ -24,6 +26,7 @@ class UserModel {
       'name': name,
       'email': email,
       'role': role,
+      'permissions': permissions,
       'created_at': createdAt,
       'last_login': lastLogin,
     };
@@ -35,6 +38,7 @@ class UserModel {
       name: map['name'] as String,
       email: map['email'] as String,
       role: map['role'] as String,
+      permissions: List<String>.from(map['permissions'] ?? []),
       createdAt: _parseDateTime(map['created_at'] ?? map['createdAt']),
       lastLogin: _parseDateTime(map['last_login'] ?? map['lastLogin']),
     );
@@ -56,6 +60,7 @@ class UserModel {
     String? name,
     String? email,
     String? role,
+    List<String>? permissions,
     DateTime? createdAt,
     DateTime? lastLogin,
   }) {
@@ -64,6 +69,7 @@ class UserModel {
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+      permissions: permissions ?? this.permissions,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
     );

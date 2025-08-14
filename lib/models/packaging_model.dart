@@ -140,6 +140,7 @@ class EmptyPackagesInventoryModel {
 class FinishedProductsModel {
   final String? id;
   final String batchNumber;
+  final String emptyPackageId; // Reference to specific empty package inventory item
   final int quantity; // This deducts from empty packages stock
   final String? notes;
   final List<String>? imageUrls;
@@ -149,6 +150,7 @@ class FinishedProductsModel {
   FinishedProductsModel({
     this.id,
     required this.batchNumber,
+    required this.emptyPackageId,
     required this.quantity,
     this.notes,
     this.imageUrls,
@@ -162,6 +164,7 @@ class FinishedProductsModel {
     return FinishedProductsModel(
       id: doc.id,
       batchNumber: data['batchNumber'] ?? '',
+      emptyPackageId: data['emptyPackageId'] ?? '',
       quantity: data['quantity'] ?? 0,
       notes: data['notes'],
       imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,
@@ -173,6 +176,7 @@ class FinishedProductsModel {
   Map<String, dynamic> toMap() {
     return {
       'batchNumber': batchNumber,
+      'emptyPackageId': emptyPackageId,
       'quantity': quantity,
       'notes': notes,
       'imageUrls': imageUrls,
@@ -185,6 +189,7 @@ class FinishedProductsModel {
     return FinishedProductsModel(
       id: data['id'],
       batchNumber: data['batchNumber'] ?? '',
+      emptyPackageId: data['emptyPackageId'] ?? '',
       quantity: data['quantity'] ?? 0,
       notes: data['notes'],
       imageUrls: data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : null,

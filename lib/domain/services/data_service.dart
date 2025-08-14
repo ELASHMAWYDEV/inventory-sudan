@@ -82,6 +82,30 @@ class DataService {
     return _repository.deleteFarmToDryingRecord(id);
   }
 
+  // Batch management methods
+  Future<List<String>> getExistingBatchNumbers() async {
+    final records = await getFarmToDryingRecords();
+    return records.map((record) => record.batchNumber).toSet().toList()..sort();
+  }
+
+  Future<String> generateNewBatchNumber() async {
+    final existingBatches = await getExistingBatchNumbers();
+    if (existingBatches.isEmpty) {
+      return 'BATCH-001';
+    }
+
+    // Extract numbers from existing batch numbers
+    final numbers = existingBatches
+        .map((batch) => batch.replaceAll(RegExp(r'[^0-9]'), ''))
+        .where((num) => num.isNotEmpty)
+        .map((num) => int.tryParse(num) ?? 0)
+        .toList()
+      ..sort();
+
+    final nextNumber = numbers.isNotEmpty ? numbers.last + 1 : 1;
+    return 'BATCH-${nextNumber.toString().padLeft(3, '0')}';
+  }
+
   // Packaging methods
   Future<List<PackagingModel>> getPackagingRecords() {
     return _repository.getPackagingRecords();
@@ -128,8 +152,8 @@ class DataService {
     return _repository.getFinishedProducts();
   }
 
-  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity) {
-    return _repository.deductEmptyPackagesStock(batchNumber, quantity);
+  Future<void> deductEmptyPackagesStock(String emptyPackageId, int quantity) {
+    return _repository.deductEmptyPackagesStock(emptyPackageId, quantity);
   }
 
   // Sales methods

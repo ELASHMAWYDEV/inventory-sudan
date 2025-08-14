@@ -20,13 +20,17 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _dataService = serviceLocator<DataService>();
   bool _isLoading = false;
+  bool _isLoadingBatchData = true;
 
   // Dynamic lists that can be expanded
   List<String> _productNames = ['فول سوداني', 'سمسم', 'ذرة'];
   List<String> _purchaseLocations = ['الخرطوم', 'كسلا', 'الجزيرة', 'سنار'];
   List<String> _supplierNames = ['محمد أحمد', 'علي محمد', 'فاطمة عبدالله'];
 
-  final List<String> _productTypes = ['خام', 'مجفف'];
+  // Batch management
+  List<String> _existingBatchNumbers = [];
+  String? _selectedBatchNumber;
+  bool _createNewBatch = true;
 
   // Controllers for cost calculation
   final TextEditingController _productCostController = TextEditingController();
@@ -38,6 +42,27 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
     super.initState();
     _productCostController.addListener(_calculateTotalCost);
     _logisticsCostController.addListener(_calculateTotalCost);
+    _loadBatchData();
+  }
+
+  Future<void> _loadBatchData() async {
+    try {
+      final existingBatches = await _dataService.getExistingBatchNumbers();
+      setState(() {
+        _existingBatchNumbers = existingBatches;
+        _isLoadingBatchData = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingBatchData = false;
+      });
+      Get.snackbar(
+        'خطأ',
+        'حدث خطأ أثناء تحميل بيانات الدفعات: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   @override
@@ -56,6 +81,17 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
   }
 
   Future<void> _submitForm() async {
+    // Validate batch selection first
+    if (!_createNewBatch && (_selectedBatchNumber == null || _selectedBatchNumber!.isEmpty)) {
+      Get.snackbar(
+        'خطأ في التحقق',
+        'يرجى اختيار دفعة موجودة أو إنشاء دفعة جديدة',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       setState(() => _isLoading = true);
 
@@ -66,8 +102,17 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
         final logisticsCost = double.tryParse(_logisticsCostController.text) ?? 0.0;
         final totalCost = productCost + logisticsCost;
 
+        // Determine batch number
+        String batchNumber;
+        if (_createNewBatch) {
+          batchNumber = await _dataService.generateNewBatchNumber();
+        } else {
+          batchNumber = _selectedBatchNumber ?? await _dataService.generateNewBatchNumber();
+        }
+
         // Convert form data to the format expected by the service
         final data = {
+          'batchNumber': batchNumber,
           'productName': formData['productName'],
           'productType': formData['productType'],
           'purchaseDate': (formData['purchaseDate'] as DateTime).toIso8601String(),
@@ -86,7 +131,7 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
         Get.back();
         Get.snackbar(
           'نجاح',
-          'تم إضافة المنتج بنجاح',
+          'تم إضافة المنتج بنجاح للدفعة: $batchNumber',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
@@ -109,11 +154,145 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
     }
   }
 
+  Widget _buildBatchSelectionWidget() {
+    if (_isLoadingBatchData) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('جاري تحميل بيانات الدفعات...'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.batch_prediction, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  'إدارة الدفعة',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: RadioListTile<bool>(
+                    title: const Text('إنشاء دفعة جديدة'),
+                    value: true,
+                    groupValue: _createNewBatch,
+                    onChanged: (value) {
+                      setState(() {
+                        _createNewBatch = value ?? true;
+                        if (_createNewBatch) {
+                          _selectedBatchNumber = null;
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (_existingBatchNumbers.isNotEmpty)
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<bool>(
+                      title: const Text('إضافة لدفعة موجودة'),
+                      value: false,
+                      groupValue: _createNewBatch,
+                      onChanged: (value) {
+                        setState(() {
+                          _createNewBatch = value ?? true;
+                          if (!_createNewBatch && _existingBatchNumbers.isNotEmpty) {
+                            _selectedBatchNumber = _existingBatchNumbers.first;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            if (!_createNewBatch && _existingBatchNumbers.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedBatchNumber,
+                decoration: const InputDecoration(
+                  labelText: 'اختر الدفعة',
+                  prefixIcon: Icon(Icons.list),
+                  border: OutlineInputBorder(),
+                ),
+                items: _existingBatchNumbers
+                    .map((batch) => DropdownMenuItem(
+                          value: batch,
+                          child: Text(batch),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedBatchNumber = value;
+                  });
+                },
+                validator: (value) {
+                  if (!_createNewBatch && (value == null || value.isEmpty)) {
+                    return 'يرجى اختيار دفعة';
+                  }
+                  return null;
+                },
+              ),
+            ],
+            if (_createNewBatch) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'سيتم إنشاء رقم دفعة جديد تلقائياً',
+                        style: TextStyle(
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إضافة منتج جديد'),
+        title: const Text('اضافة دفعة جديدة'),
         centerTitle: true,
       ),
       body: FormBuilder(
@@ -121,20 +300,8 @@ class _FarmToDryingFormScreenState extends State<FarmToDryingFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            FormBuilderDropdown<String>(
-              name: 'productType',
-              decoration: const InputDecoration(
-                labelText: 'نوع المنتج',
-                prefixIcon: Icon(Icons.category),
-              ),
-              validator: FormBuilderValidators.required(errorText: 'هذا الحقل مطلوب'),
-              items: _productTypes
-                  .map((type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(type),
-                      ))
-                  .toList(),
-            ),
+            // Batch Selection Widget
+            _buildBatchSelectionWidget(),
             const SizedBox(height: 16),
 
             // Dynamic Product Name Dropdown

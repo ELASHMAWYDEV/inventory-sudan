@@ -15,6 +15,12 @@ import 'package:inventory_sudan/ui/screens/packaging/finished_products_form_scre
 import 'package:inventory_sudan/ui/screens/sales/sales_screen.dart';
 import 'package:inventory_sudan/ui/screens/sales/sales_form_screen.dart';
 import 'package:inventory_sudan/ui/screens/sales/sales_details_screen.dart';
+import 'package:inventory_sudan/ui/screens/stock_log/stock_log_screen.dart';
+import 'package:inventory_sudan/ui/screens/stock_log/stock_log_form_screen.dart';
+import 'package:inventory_sudan/ui/screens/stock_log/stock_log_details_screen.dart';
+import 'package:inventory_sudan/ui/screens/users/users_management_screen.dart';
+import 'package:inventory_sudan/ui/screens/settings/settings_screen.dart';
+import 'package:inventory_sudan/ui/screens/statistics/statistics_screen.dart';
 
 class AppRouter {
   // Auth routes
@@ -49,9 +55,15 @@ class AppRouter {
   static const String STOCK_LOG_FORM = '/stock-log/form';
   static const String STOCK_LOG_DETAILS = '/stock-log/details';
 
+  // Users routes
+  static const String USERS_MANAGEMENT = '/users-management';
+
   // Settings routes
   static const String SETTINGS = '/settings';
   static const String PROFILE = '/profile';
+
+  // Statistics routes
+  static const String STATISTICS = '/statistics';
 
   // Error routes
   static const String ERROR = '/error';
@@ -121,6 +133,36 @@ class AppRouter {
     GetPage(
       name: SALES_DETAILS,
       page: () => const SalesDetailsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: STOCK_LOG,
+      page: () => const StockLogScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: STOCK_LOG_FORM,
+      page: () => const StockLogFormScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: STOCK_LOG_DETAILS,
+      page: () => const StockLogDetailsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: USERS_MANAGEMENT,
+      page: () => const UsersManagementScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: SETTINGS,
+      page: () => const SettingsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: STATISTICS,
+      page: () => const StatisticsScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(

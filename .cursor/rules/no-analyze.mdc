@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+Don't do flutter run or flutter anayze after any modificaiton, just give me the brief of what you have done.

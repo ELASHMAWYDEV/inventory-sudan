@@ -26,6 +26,7 @@ class AuthService {
             name: userData['name'] ?? '',
             email: userData['email'] ?? '',
             role: userData['role'] ?? 'worker',
+            permissions: userData['permissions'] ?? [],
             createdAt: userData['created_at']?.toDate() ?? DateTime.now(),
             lastLogin: DateTime.now(),
           );
@@ -56,6 +57,7 @@ class AuthService {
         name: userData['name'] ?? '',
         email: userData['email'] ?? '',
         role: userData['role'] ?? 'worker',
+        permissions: userData['permissions'] ?? [],
         createdAt: userData['created_at']?.toDate() ?? DateTime.now(),
         lastLogin: userData['last_login']?.toDate() ?? DateTime.now(),
       );
@@ -101,6 +103,7 @@ class AuthService {
           name: name,
           email: email,
           role: role,
+          permissions: [],
           createdAt: DateTime.now(),
           lastLogin: DateTime.now(),
         );

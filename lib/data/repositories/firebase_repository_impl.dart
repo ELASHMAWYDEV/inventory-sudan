@@ -228,19 +228,34 @@ class FirebaseRepositoryImpl implements DataRepository {
   }
 
   @override
-  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity) async {
+  Future<void> deductEmptyPackagesStock(String emptyPackageId, int quantity) async {
     try {
-      // This is a simplified implementation - in a real scenario, you'd need to:
-      // 1. Find the corresponding product for the batch number
-      // 2. Find the empty packages inventory for that product
-      // 3. Deduct the quantity from the stock
-      // For now, we'll just log this action
+      // Get the empty package document
+      final packageDoc = await _firestore.collection(_emptyPackagesInventoryCollection).doc(emptyPackageId).get();
 
+      if (!packageDoc.exists) {
+        throw Exception('Empty package inventory item not found');
+      }
+
+      final packageData = packageDoc.data()!;
+      final currentStock = packageData['stock'] as int;
+
+      if (currentStock < quantity) {
+        throw Exception('Insufficient stock. Available: $currentStock, Requested: $quantity');
+      }
+
+      // Update the stock
+      final newStock = currentStock - quantity;
+      await _firestore.collection(_emptyPackagesInventoryCollection).doc(emptyPackageId).update({
+        'stock': newStock,
+      });
+
+      // Create a stock log entry for this deduction
       final inventoryItem = InventoryItem(
-        itemName: 'Product for batch: $batchNumber',
+        itemName: packageData['productName'] + ' - ' + packageData['packageType'],
         itemType: 'empty_package',
-        expectedQuantity: 0.0,
-        actualQuantity: -quantity.toDouble(),
+        expectedQuantity: currentStock.toDouble(),
+        actualQuantity: newStock.toDouble(),
         unit: 'count',
         difference: -quantity.toDouble(),
         reason: 'Finished products packaging',
@@ -250,7 +265,7 @@ class FirebaseRepositoryImpl implements DataRepository {
         logDate: DateTime.now(),
         inventoryItems: [inventoryItem],
         hasDiscrepancies: true,
-        notes: 'Automatic deduction for finished products packaging',
+        notes: 'Automatic deduction for finished products packaging - Package ID: $emptyPackageId',
         createdBy: 'system',
         createdAt: DateTime.now(),
       );

@@ -6,6 +6,8 @@ import 'package:inventory_sudan/domain/services/data_service.dart';
 import 'package:inventory_sudan/services/service_locator.dart';
 import 'package:inventory_sudan/models/packaging_model.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory_sudan/ui/widgets/common/form_option_bottom_sheet.dart';
+import 'package:inventory_sudan/ui/widgets/common/finished_products_card.dart';
 
 class PackagingScreen extends StatefulWidget {
   const PackagingScreen({Key? key}) : super(key: key);
@@ -31,137 +33,41 @@ class _PackagingScreenState extends State<PackagingScreen> with SingleTickerProv
   }
 
   void _showFormSelectionBottomSheet() {
-    showModalBottomSheet(
+    FormOptionBottomSheet.show(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'اختر نوع النموذج',
-              style: AppTextStyles.heading2.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Products after drying option
-            _buildFormOption(
-              title: 'منتجات ما بعد التجفيف',
-              subtitle: 'رقم الدفعة وإجمالي الوزن المُنتج',
-              icon: Icons.agriculture,
-              color: Colors.green,
-              onTap: () {
-                Navigator.pop(context);
-                Get.toNamed(AppRouter.PACKAGING_PRODUCTS_AFTER_DRYING_FORM);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Empty packages inventory option
-            _buildFormOption(
-              title: 'مخزون العبوات الفارغة',
-              subtitle: 'اسم المنتج، المخزون، التكلفة، نوع العبوة',
-              icon: Icons.inventory_2,
-              color: Colors.blue,
-              onTap: () {
-                Navigator.pop(context);
-                Get.toNamed(AppRouter.PACKAGING_EMPTY_PACKAGES_INVENTORY_FORM);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Finished products option
-            _buildFormOption(
-              title: 'المنتجات المُعبأة',
-              subtitle: 'رقم الدفعة والكمية (يخصم من المخزون)',
-              icon: Icons.local_shipping,
-              color: Colors.orange,
-              onTap: () {
-                Navigator.pop(context);
-                Get.toNamed(AppRouter.PACKAGING_FINISHED_PRODUCTS_FORM);
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
+      title: 'اختر نوع النموذج',
+      options: [
+        FormOptionItem(
+          title: 'منتجات ما بعد التجفيف',
+          subtitle: 'رقم الدفعة وإجمالي الوزن المُنتج',
+          icon: Icons.agriculture,
+          color: Colors.green,
+          onTap: () {
+            Navigator.pop(context);
+            Get.toNamed(AppRouter.PACKAGING_PRODUCTS_AFTER_DRYING_FORM);
+          },
         ),
-      ),
-    );
-  }
-
-  Widget _buildFormOption({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
+        FormOptionItem(
+          title: 'مخزون العبوات الفارغة',
+          subtitle: 'اسم المنتج، المخزون، التكلفة، نوع العبوة',
+          icon: Icons.inventory_2,
+          color: Colors.blue,
+          onTap: () {
+            Navigator.pop(context);
+            Get.toNamed(AppRouter.PACKAGING_EMPTY_PACKAGES_INVENTORY_FORM);
+          },
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey[400],
-              size: 16,
-            ),
-          ],
+        FormOptionItem(
+          title: 'المنتجات المُعبأة',
+          subtitle: 'رقم الدفعة والكمية (يخصم من المخزون)',
+          icon: Icons.local_shipping,
+          color: Colors.orange,
+          onTap: () {
+            Navigator.pop(context);
+            Get.toNamed(AppRouter.PACKAGING_FINISHED_PRODUCTS_FORM);
+          },
         ),
-      ),
+      ],
     );
   }
 
@@ -390,41 +296,9 @@ class _PackagingScreenState extends State<PackagingScreen> with SingleTickerProv
           itemCount: data.length,
           itemBuilder: (context, index) {
             final item = data[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.local_shipping,
-                    color: Colors.orange,
-                  ),
-                ),
-                title: Text(
-                  'دفعة: ${item.batchNumber}',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('الكمية: ${item.quantity}'),
-                    Text(
-                      DateFormat('yyyy-MM-dd').format(item.createdAt),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-                trailing:
-                    item.notes != null && item.notes!.isNotEmpty ? const Icon(Icons.note, color: Colors.blue) : null,
-              ),
+            return FinishedProductsCard(
+              item: item,
+              showPackageInfo: true,
             );
           },
         );

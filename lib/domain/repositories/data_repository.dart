@@ -32,7 +32,7 @@ abstract class DataRepository {
   Future<List<ProductsAfterDryingModel>> getProductsAfterDrying();
   Future<List<EmptyPackagesInventoryModel>> getEmptyPackagesInventory();
   Future<List<FinishedProductsModel>> getFinishedProducts();
-  Future<void> deductEmptyPackagesStock(String batchNumber, int quantity);
+  Future<void> deductEmptyPackagesStock(String emptyPackageId, int quantity);
   Stream<List<ProductsAfterDryingModel>> streamProductsAfterDrying();
   Stream<List<EmptyPackagesInventoryModel>> streamEmptyPackagesInventory();
   Stream<List<FinishedProductsModel>> streamFinishedProducts();

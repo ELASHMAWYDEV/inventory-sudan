@@ -60,6 +60,7 @@ class SetupService {
           name: name,
           email: email,
           role: role,
+          permissions: [],
           createdAt: DateTime.now(),
           lastLogin: DateTime.now(),
         );
@@ -68,6 +69,7 @@ class SetupService {
           'name': user.name,
           'email': user.email,
           'role': user.role,
+          'permissions': user.permissions,
           'created_at': user.createdAt,
           'last_login': user.lastLogin,
         });

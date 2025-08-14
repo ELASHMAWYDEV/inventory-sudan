@@ -34,6 +34,7 @@ class BatchDetail {
 
 class FarmToDryingModel {
   final String? id;
+  final String batchNumber;
   final String productName;
   final DateTime purchaseDate;
   final String? productType;
@@ -85,6 +86,7 @@ class FarmToDryingModel {
 
   FarmToDryingModel({
     this.id,
+    required this.batchNumber,
     required this.productName,
     required this.purchaseDate,
     this.productType,
@@ -137,6 +139,7 @@ class FarmToDryingModel {
 
     return FarmToDryingModel(
       id: doc.id,
+      batchNumber: data['batchNumber'] ?? '',
       productName: data['productName'] ?? '',
       purchaseDate: data['purchaseDate'] != null ? (data['purchaseDate'] as Timestamp).toDate() : DateTime.now(),
       productType: data['productType'],
@@ -181,6 +184,7 @@ class FarmToDryingModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'batchNumber': batchNumber,
       'productName': productName,
       'purchaseDate': Timestamp.fromDate(purchaseDate),
       'productType': productType,
@@ -239,6 +243,7 @@ class FarmToDryingModel {
 
     return FarmToDryingModel(
       id: data['id'],
+      batchNumber: data['batchNumber'] ?? '',
       productName: data['productName'] ?? '',
       purchaseDate: parseDate(data['purchaseDate']),
       productType: data['productType'],

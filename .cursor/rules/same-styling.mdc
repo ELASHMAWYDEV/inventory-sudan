@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+When you design a new screen or a new widget, please keep the styling aligned with the rest of the application,
+for any colors use lib/utils/constants/app_colors.dart
+for any app constants use lib/utils/constants/app_constants.dart
+for any text styles use lib/utils/constants/app_text_styles.dart
